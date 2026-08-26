@@ -1,0 +1,52 @@
+{
+  "name": "tiantai",
+  "private": true,
+  "version": "2.0.0",
+  "description": "天台 —— 温柔的 AI 陪伴桌面应用",
+  "author": "tiantai",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "npm run build && electron-builder",
+    "dist": "npm run electron:build"
+  },
+  "dependencies": {
+    "@fontsource/noto-serif-sc": "^5.2.8",
+    "@fontsource/zcool-xiaowei": "^5.3.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.17.0",
+    "msedge-tts": "^2.0.7",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "tailwind-merge": "^3.6.0",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.12.3",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "autoprefixer": "^10.5.0",
+    "concurrently": "^10.0.0",
+    "electron": "^42.3.0",
+    "electron-builder": "^26.8.1",
+    "eslint": "^10.3.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.6.0",
+    "playwright-core": "^1.62.1",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^3.4.19",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.59.2",
+    "vite": "^5.4.21",
+    "vitest": "^4.1.11",
+    "wait-on": "^9.0.10"
+  }
+}
