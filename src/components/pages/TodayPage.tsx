@@ -254,16 +254,27 @@ export default function TodayPage() {
                 🔥 连续 {streak} 天
               </span>
             )}
-            {weather && (
+            {locating ? (
+              <span className="chip">🛰️ 定位中……</span>
+            ) : weather ? (
               <button
                 className="chip"
                 style={{ cursor: "pointer" }}
                 title={`${weather.city}${weather.place ? " · " + weather.place : ""}\n点击重新定位`}
                 onClick={locate}
               >
-                {locating ? "🛰️ 定位中…" : `${weather.icon} ${weather.temp}°C · ${weather.conditionLabel}`}
-                {!locating && weather.place && <span className="opacity-80"> · {weather.place}</span>}
-                {!locating && weather.aqi && <span> · 空气{weather.aqi.label}</span>}
+                {weather.icon} {weather.temp}°C · {weather.conditionLabel}
+                {weather.place && <span className="opacity-80"> · {weather.place}</span>}
+                {weather.aqi && <span> · 空气{weather.aqi.label}</span>}
+              </button>
+            ) : (
+              <button
+                className="chip"
+                style={{ cursor: "pointer", borderColor: "rgba(240,185,107,.35)", color: "#f0b96b" }}
+                title="点击授权定位，获取你所在位置的街道级天气"
+                onClick={locate}
+              >
+                📍 点击获取本地天气
               </button>
             )}
           </div>
