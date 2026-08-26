@@ -112,13 +112,20 @@ export default function TodayPage() {
     return () => clearInterval(iv);
   }, [quote]);
 
-  const h = selectedHour;
-  const greet =
-    h < 6 ? "夜深了，还没睡？"
-    : h < 12 ? "早安，今天如何？"
-    : h < 17 ? "下午好，你还好吗？"
-    : h < 20 ? "傍晚了，去窗边看看？"
-    : "晚上好，今天辛苦了。";
+  // 问候语跟随「所选时段」的意境，而非机械钟点；
+  // 凌晨真实时间（0-4 点）另有专属关怀文案
+  const SLOT_GREETINGS: Record<string, string> = {
+    dawn: "天快亮了，追光的人先醒。",
+    morning: "早安，今天的空气是新的。",
+    noon: "正午阳光很满，记得吃口热的。",
+    afternoon: "午后慢慢来，风也变慢了。",
+    sunset: "去看场落日吧，就在今晚。",
+    night: "夜色温柔，今天辛苦了。",
+  };
+  let greet = SLOT_GREETINGS[currentSlot.slotKey] ?? "今天也辛苦了。";
+  if (selectedHour === realHour && realHour < 5) {
+    greet = "这么晚还醒着？上来吹吹风吧。";
+  }
 
   const days = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
   const d = new Date();
