@@ -341,6 +341,30 @@ export default function SettingsPage() {
             />
           </button>
         </div>
+
+        {/* 今天页实景天台 */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">🌇</span>
+            <div>
+              <p className="text-sm text-warm-50">今天页实景天台</p>
+              <p className="text-[10px] text-warm-400 leading-tight">黎明 / 傍晚 / 深夜为三渲二实时场景，关闭回退照片横幅</p>
+            </div>
+          </div>
+          <button
+            onClick={() => updateSettings({ useSceneBanner: !settings.useSceneBanner })}
+            className={`w-11 h-6 rounded-full transition-colors relative ${
+              settings.useSceneBanner ? "bg-warm-100/40" : "bg-white/10"
+            }`}
+            aria-label={settings.useSceneBanner ? "关闭实景天台" : "开启实景天台"}
+          >
+            <div
+              className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
+                settings.useSceneBanner ? "left-6" : "left-1"
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Achievements */}
@@ -443,7 +467,7 @@ export default function SettingsPage() {
 
       {/* App info */}
       <p className="text-center text-[10px] text-warm-400 mt-6 leading-relaxed">
-        天台 v2.0 · 你的隐私陪伴 · AI 由你自己的 Key 驱动
+        天台 v2.1 · 你的隐私陪伴 · AI 由你自己的 Key 驱动
         <br />
         陪伴工具，不能替代专业帮助；情绪危机请拨打心理援助热线 12356
       </p>

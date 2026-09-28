@@ -1,13 +1,17 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Camera } from "lucide-react";
 import { useAppStore } from "../../stores/appStore";
 import { useDailyQuote, useDailyFortune } from "../../hooks/useDailyQuote";
 import MoodOrbs from "../MoodOrbs";
+import TiantaiScene, { type TiantaiSceneHandle, type TiantaiWeather } from "../TiantaiScene/TiantaiScene";
 import { getWeather, refreshWeather, type WeatherData } from "../../utils/weather";
 import { getTimeSlots, getTimeSlotForHour, getWallpaperPool, getGradientForSlot } from "../../utils/unsplash";
 import { getMoonPhase, getCurrentSolarTerm } from "../../utils/lunar";
 import { computeStreak } from "../../utils/streak";
 import type { Mood } from "../../types";
+
+/** 场景覆盖的时段（渐进替换:其余时段保留照片横幅） */
+const SCENE_SLOTS = new Set<string>(["dawn", "sunset", "night"]);
 
 export default function TodayPage() {
   const currentMood = useAppStore((s) => s.currentMood);
@@ -59,6 +63,14 @@ export default function TodayPage() {
   };
   const wallpaper = wallpaperPool.length ? wallpaperPool[wallIdx % wallpaperPool.length] : "";
 
+  // ── 三渲二实景天台:场景覆盖时段 + 用户开关 + WebGL 兜底 ──
+  const useSceneBanner = useAppStore((s) => s.settings.useSceneBanner);
+  const [sceneFailed, setSceneFailed] = useState(false);
+  const sceneHandleRef = useRef<TiantaiSceneHandle | null>(null);
+  // 用户开关切换时重置失败标记(给瞬时故障一次重试机会)
+  useEffect(() => { setSceneFailed(false); }, [useSceneBanner]);
+  const showScene = useSceneBanner && SCENE_SLOTS.has(currentSlot.slotKey) && !sceneFailed;
+
   // Weather + 手动定位（点击天气徽章重新定位到街道级）
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [locating, setLocating] = useState(false);
@@ -77,15 +89,17 @@ export default function TodayPage() {
   };
 
   // 风景横幅滚动视差：背景以 0.35 倍速缓移（Ken Burns 由 CSS 动画负责）
+  // 场景横幅：同一滚动量经 setParallax 换算为取景偏移（内部更克制）
   useEffect(() => {
     const scroller = pageRef.current?.closest("main") as HTMLElement | null;
-    if (!scroller || !bannerRef.current) return;
+    if (!scroller) return;
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const y = Math.min(scroller.scrollTop * 0.35, 88);
         if (bannerRef.current) bannerRef.current.style.translate = `0 ${y}px`;
+        sceneHandleRef.current?.setParallax(scroller.scrollTop);
       });
     };
     scroller.addEventListener("scroll", onScroll, { passive: true });
@@ -152,35 +166,45 @@ export default function TodayPage() {
 
   return (
     <div className="pb-7 page-enter">
-      {/* ── Landscape Banner：Ken Burns 缓推 + 滚动视差 + 光尘 ── */}
+      {/* ── Landscape Banner：场景时段渲染三渲二天台,其余时段 Ken Burns 照片 ── */}
       <div ref={pageRef} className="relative w-full h-[210px] overflow-hidden">
-        <div
-          ref={bannerRef}
-          className="absolute -inset-x-4 -top-24 bottom-[-16px] animate-kenburns will-change-transform"
-          style={{
-            background: wallpaper
-              ? `url(${wallpaper}) center/cover no-repeat`
-              : gradient,
-          }}
-        >
-          {/* 光尘：缓慢上浮的微粒，颜色随天气×时刻映射（雨天冷蓝/雪天冰晶/晴夜星光/晴日暖金） */}
-          {[...Array(6)].map((_, i) => (
-            <span
-              key={i}
-              className="absolute rounded-full animate-float-slow"
-              style={{
-                left: `${12 + i * 14}%`,
-                top: `${25 + (i % 3) * 18}%`,
-                width: 2 + (i % 3),
-                height: 2 + (i % 3),
-                background: dustStyle.core,
-                boxShadow: `0 0 6px ${dustStyle.glow}`,
-                animationDelay: `${i * 1.1}s`,
-                animationDuration: `${6 + (i % 4)}s`,
-              }}
-            />
-          ))}
-        </div>
+        {showScene ? (
+          <TiantaiScene
+            slot={currentSlot.slotKey as "dawn" | "sunset" | "night"}
+            weather={(weather?.condition as TiantaiWeather | undefined) ?? null}
+            onSceneReady={(h) => { sceneHandleRef.current = h; }}
+            onFallback={() => setSceneFailed(true)}
+          />
+        ) : (
+          <div
+            ref={bannerRef}
+            className="absolute -inset-x-4 -top-24 bottom-[-16px] animate-kenburns will-change-transform"
+            style={{
+              background: wallpaper
+                ? `url(${wallpaper}) center/cover no-repeat`
+                : gradient,
+            }}
+          >
+            {/* 光尘：缓慢上浮的微粒，颜色随天气×时刻映射（雨天冷蓝/雪天冰晶/晴夜星光/晴日暖金）
+                仅照片横幅渲染 —— 场景横幅自带 WebGL 光尘,两层全屏叠加 = fill-rate 双倍开销 */}
+            {[...Array(6)].map((_, i) => (
+              <span
+                key={i}
+                className="absolute rounded-full animate-float-slow"
+                style={{
+                  left: `${12 + i * 14}%`,
+                  top: `${25 + (i % 3) * 18}%`,
+                  width: 2 + (i % 3),
+                  height: 2 + (i % 3),
+                  background: dustStyle.core,
+                  boxShadow: `0 0 6px ${dustStyle.glow}`,
+                  animationDelay: `${i * 1.1}s`,
+                  animationDuration: `${6 + (i % 4)}s`,
+                }}
+              />
+            ))}
+          </div>
+        )}
         {/* Gradient overlay */}
         <div
           className="absolute inset-0"
@@ -188,17 +212,29 @@ export default function TodayPage() {
             background: "linear-gradient(180deg, rgba(5,8,16,0.08) 0%, rgba(5,8,16,0.42) 72%, rgba(5,8,16,1) 100%)",
           }}
         />
-        {/* 轮换按钮：换个该时段的风景 */}
-        {wallpaperPool.length > 1 && (
+        {/* 场景时段:切换机位(循环 3 个预设视角);照片时段:轮换壁纸 */}
+        {showScene ? (
           <button
-            onClick={rotateWallpaper}
+            onClick={() => sceneHandleRef.current?.cycleViewPreset()}
             className="absolute bottom-3 right-3 z-[3] w-9 h-9 rounded-full glass flex items-center justify-center hover:bg-white/10 active:scale-90 transition-transform"
             style={{ backdropFilter: "blur(12px)" }}
-            aria-label={`换一张${currentSlot.label}的风景`}
-            title={`换一张${currentSlot.label}风景（${wallpaperPool.length} 张可选）`}
+            aria-label="切换机位"
+            title="切换机位"
           >
-            <RefreshCw size={15} className="text-warm-100" />
+            <Camera size={15} className="text-warm-100" />
           </button>
+        ) : (
+          wallpaperPool.length > 1 && (
+            <button
+              onClick={rotateWallpaper}
+              className="absolute bottom-3 right-3 z-[3] w-9 h-9 rounded-full glass flex items-center justify-center hover:bg-white/10 active:scale-90 transition-transform"
+              style={{ backdropFilter: "blur(12px)" }}
+              aria-label={`换一张${currentSlot.label}的风景`}
+              title={`换一张${currentSlot.label}风景（${wallpaperPool.length} 张可选）`}
+            >
+              <RefreshCw size={15} className="text-warm-100" />
+            </button>
+          )
         )}
       </div>
 

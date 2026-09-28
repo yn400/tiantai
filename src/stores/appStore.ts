@@ -51,6 +51,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   breathingSoundEnabled: true,
   careNotifications: true,
   closeToTray: true,
+  useSceneBanner: true,
   asrProvider: "siliconflow",
   asrApiKey: "",
 };

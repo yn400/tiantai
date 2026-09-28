@@ -93,6 +93,8 @@ export interface AppSettings {
   careNotifications: boolean;
   /** 点 × 隐藏到托盘（托盘右键才真正退出），桌面端专属 */
   closeToTray: boolean;
+  /** 今天页横幅使用三渲二实景天台（黎明/傍晚/深夜），关闭回退照片横幅 */
+  useSceneBanner: boolean;
   // ── 语音识别（云端 ASR，BYOK）──
   asrProvider: "siliconflow" | "openai";
   asrApiKey: string;
