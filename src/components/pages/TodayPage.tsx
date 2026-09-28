@@ -131,7 +131,7 @@ export default function TodayPage() {
   const SLOT_GREETINGS: Record<string, string> = {
     dawn: "天快亮了，追光的人先醒。",
     morning: "早安，今天的空气是新的。",
-    noon: "正午阳光很满，记得吃口热的。",
+    noon: "正午阳光很满，记得好好吃午饭。",
     afternoon: "午后慢慢来，风也变慢了。",
     sunset: "去看场落日吧，就在今晚。",
     night: "夜色温柔，今天辛苦了。",
