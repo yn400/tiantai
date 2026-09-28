@@ -35,28 +35,5 @@ jobs:
             release/*.blockmap
           body_path: RELEASE_NOTES.md
 
-  deploy-pages:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - run: npm run build
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-      - id: deployment
-        uses: actions/deploy-pages@v4
+  # Pages 部署已移至 ci.yml（仅 main 推送触发）：
+  # github-pages 环境保护规则拒绝 tag 来源的部署（v2.1.0 曾被拒）
