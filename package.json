@@ -1,7 +1,7 @@
 {
   "name": "tiantai",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "天台 —— 温柔的 AI 陪伴桌面应用",
   "author": "tiantai",
   "type": "module",
@@ -22,6 +22,7 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "tailwind-merge": "^3.6.0",
+    "three": "^0.180.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
@@ -31,6 +32,7 @@
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.180.0",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.5.0",
     "concurrently": "^10.0.0",
